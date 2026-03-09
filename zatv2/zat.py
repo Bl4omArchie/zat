@@ -1,10 +1,30 @@
-from typing import Protocol
+from zatv2.to_dask import ZeekLogToDask
+from zatv2.to_pandas import ZeekLogToPandas
+from zatv2.to_spark import ZeekLogToSpark
+from zatv2.to_polars import ZeekLogToPolars
+
 
 class ZAT:
-    def __init__(self):
+    def __init__(self, path: str):
         pass
 
-class B(file_tailer.FileTailer):
+    def read_log(self):
+        pass
+
+    def convert_to_dask(self):
+        pass
+
+    def convert_to_numpy(self):
+        pass
+
+    def convert_to_spark(self):
+        pass
+
+    def convert_to_polars(self):
+        pass
+
+
+class ZeekLogReader(file_tailer.FileTailer):
     """ZeekLogReader: This class reads in various Zeek logs. The class inherits from
                      the FileTailer class so it supports the following use cases:
                        - Read contents of a Zeek log file        (tail=False)
@@ -157,42 +177,13 @@ class B(file_tailer.FileTailer):
         return data_dict
 
 
-class Converter(Protocol):
+def main():
+    zat = ZAT("blob.*.log")
 
-    def supports(self, b: B) -> bool: ...
-
-    def convert(self, b: B):
-        ...
-
-
-
-class D:
-
-    def supports(self, b: B) -> bool:
-        return b.path.suffix == ".d"
-
-    def convert(self, b: B):
-        return f"D processed {b.path}"
+    dd = zat.convert_to_dask()
+    pd = zat.convert_to_spark()
+    sd = zat.convert_to_pandas()
 
 
-
-class E:
-
-    def supports(self, b: B) -> bool:
-        return b.path.suffix == ".e"
-
-    def convert(self, b: B):
-        return f"E processed {b.path}"
-    
-
-def load_file(path):
-    with open(path, "rb") as f:
-        return B(path=path, content=f.read())
-    
-def process(paths):
-
-    for path in paths:
-
-        b = load_file(path)
-
-        
+if __name__ == "__main__":
+    main()
