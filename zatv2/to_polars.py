@@ -1,15 +1,10 @@
-from zatv2.converter import Converter
-from zat import zeek_log_reader
+from typing import Dict
+
+from zatv2.base import Converter, FieldInfos
+from zatv2.reader import ZeekLogReader
+
+from pandas import DataFrame
 import polars as pl
-
-from dataclasses import dataclass
-from typing import List, Dict
-
-
-@dataclass
-class FieldInfos():
-    names: List[str]
-    types: List[str]
 
 
 class ZeekLogToPolars(Converter):
@@ -29,19 +24,18 @@ class ZeekLogToPolars(Converter):
             'enum': pl.Categorical,
         }
 
-    def convert(self, path: str) -> "Dataframe":
-        # 1. Get field infos
+    def convert(self, path: str) -> DataFrame:
+        # 1. Get field infos.
         field_infos = self._get_field_info(path)
 
-        # 2. Convert zeek types to polars types
-        polars_types_map = self._apply_type_map(field_infos)
+        # 2. Convert zeek types to polars types.
+        #    Replace old types from FieldInfos struct with the converted ones.
+        field_infos.types = self._apply_type_map(field_infos)
 
-        print(polars_types_map)
+        # 3. Get dataframe.
+        self._df =  self._get_dataframe(path, field_infos)
 
-        # 3. Get dataframe
-        self._df =  self._get_dataframe(path, field_infos.names, polars_types_map)
-
-        # 4. Convert time type
+        # 4. Convert time type.
         time_cols = [name for name, zt in zip(field_infos.names, field_infos.types) if zt == "time"]
         interval_cols = [name for name, zt in zip(field_infos.names, field_infos.types) if zt == "interval"]
 
@@ -58,20 +52,20 @@ class ZeekLogToPolars(Converter):
         return self._df
 
 
-    def _get_field_info(self, path: str) -> "FieldInfos":
+    def _get_field_info(self, path: str) -> FieldInfos:
         """Internal Method: Use ZAT log reader to read header for names and types"""
-        _zeek_reader = zeek_log_reader.ZeekLogReader(path)
+        _zeek_reader = ZeekLogReader(path)
         _, field_names, field_types, _ = _zeek_reader._parse_zeek_header(path)
         
         return FieldInfos(names=field_names, types=field_types)
 
 
-    def _get_dataframe(self, path, all_fields, dtypes) -> "Dataframe":
+    def _get_dataframe(self, path, field_infos: FieldInfos) -> DataFrame:
         """Internal Method: Create the initial dataframes by using Pandas read CSV (primary types correct)"""
-        return pl.read_csv(path, separator='\t', has_header=False, new_columns=all_fields, schema_overrides=dtypes, comment_prefix="#", null_values=["-", "NA", ""])
+        return pl.read_csv(path, separator='\t', has_header=False, new_columns=field_infos.names, schema_overrides=field_infos.types, comment_prefix="#", null_values=["-", "NA", ""])
 
 
-    def _apply_type_map(self, field_infos: "FieldInfos") -> Dict:
+    def _apply_type_map(self, field_infos: FieldInfos) -> Dict:
         polars_types_map = {}
         for name, zeek_type in zip(field_infos.names, field_infos.types):
 
