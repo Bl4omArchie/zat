@@ -13,9 +13,9 @@ def test_to_pandas():
 
 def test_to_polars():
     obj = ZeekLogToPolars()
-    pf = obj.convert(path)
+    pl = obj.convert(path)
 
-    print(pf.head)
+    print(pl)
 
 def test_to_dask():
     obj = ZeekLogToDask()
