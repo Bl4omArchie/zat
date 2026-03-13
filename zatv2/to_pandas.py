@@ -16,7 +16,7 @@ class ZeekLogToPandas(Converter):
                         }
 
 
-    def convert(self, path: str, ts_index: bool =True, aggressive_category: bool =True, usecols:bool =None):
+    def convert(self, path: str, ts_index: bool = True, aggressive_category: bool = True, usecols:bool =None):
         """ Create a Pandas dataframe from a Bro/Zeek log file
             Args:
                log_fllename (string): The full path to the Zeek log

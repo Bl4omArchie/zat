@@ -13,7 +13,7 @@ class FieldInfos:
 
 class Converter(ABC):
     @abstractmethod
-    def convert(self, path: str) -> DataFrame:
+    def create_dataframe(self, path: str) -> DataFrame:
         pass
 
     @abstractmethod

@@ -1,6 +1,7 @@
 from zatv2.to_dask import ZeekLogToDask
 from zatv2.to_pandas import ZeekLogToPandas
 from zatv2.to_polars import ZeekLogToPolars
+from zatv2.zat import ZAT
 
 import pandas as pd
 
@@ -68,8 +69,13 @@ def test_to_dask():
 
     print(df.columns)
 
+def test_zat():
+    obj = ZAT("file")
+    obj.open("data/*.log")
+
 
 def main():
-    test_to_pandas()
+    #test_to_pandas()
     #test_to_dask()
     #test_to_polars()
+    test_zat()

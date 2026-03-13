@@ -1,13 +1,13 @@
 from typing import Dict
 
-from zatv2.base import Converter, FieldInfos
-from zatv2.reader import ZeekLogReader
+from zat.base import Converter, FieldInfos
+from zat.zeek_log_reader import ZeekLogReader
 
 from pandas import DataFrame
 import dask.dataframe as dd
 
 
-class ZeekLogToDask(Converter):
+class LogToDask(Converter):
     def __init__(self):
         self.type_map = {'bool': 'category',  # Can't hold NaN values in 'bool', so we're going to use category
                         'count': 'UInt64',
@@ -19,7 +19,7 @@ class ZeekLogToDask(Converter):
                         }
 
 
-    def convert(self, path: str) -> DataFrame:
+    def create_dataframe(self, path: str) -> DataFrame:
         # 1. Get field infos.
         field_infos = self._get_field_info(path)
 
