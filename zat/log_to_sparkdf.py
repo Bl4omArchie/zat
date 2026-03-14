@@ -1,7 +1,7 @@
 import fsspec
 
-from zat.base import ZeekLogInfos, Converter
-from zat.zeek_log_reader import ZeekLogReader
+from zat.base import  Converter
+from zat import zeek_log_reader
 
 # Third Party
 try:
@@ -17,7 +17,7 @@ from pandas import DataFrame
 class LogToSparkDF(Converter):
     """LogToSparkDF: Converts a Zeek log to a Spark DataFrame"""
 
-    def __init__(self, fs: fsspec.filesystem, spark):
+    def __init__(self, spark):
         """Initialize the LogToSparkDF class"""
 
         # Grab the spark context
@@ -41,47 +41,63 @@ class LogToSparkDF(Converter):
                          'string': StringType()
                          }
         
-        super().__init__(fs)
 
-    def create_dataframe(self, path: str, fillna=True) -> DataFrame:
-        # 1. Get field infos.
-        field_infos = self._get_field_info(path)
+    def create_dataframe(self, log_filename: str, fillna=True) -> DataFrame:
+        """ Create a Spark dataframe from a Bro/Zeek log file
+            Args:
+               log_fllename (string): The full path to the Zeek log
+               fillna (bool): Fill in NA/NaN values (default=True)
+        """
 
-        # 2. Convert zeek types to polars types.
-        #    Replace old types from FieldInfos struct with the converted ones.
-        field_infos.types = self._apply_type_map(field_infos)
+        # Create a Zeek log reader just to read in the header for names and types
+        _zeek_reader = zeek_log_reader.ZeekLogReader(log_filename)
+        _, field_names, field_types, _ = _zeek_reader._parse_zeek_header(log_filename)
 
-        # 3. Get dataframe.
-        self._df =  self._get_dataframe(path, field_infos)
+        # Get the appropriate types for the Spark Dataframe
+        spark_schema = self.build_spark_schema(field_names, field_types)
 
-        fixed_columns = list(map(lambda x: x.replace('.', '_'), self._df.columns))
-        self._df = self.self._df.toDF(*fixed_columns)
+        # Now actually read the Zeek Log using Spark read CSV
+        _df = self.spark.read.csv(log_filename, schema=spark_schema, sep='\t', comment="#", nullValue='-')
+
+        ''' Secondary processing (cleanup)
+            - Fix column names with '.' in them
+            - Fill in Nulls (optional)
+            - timestamp convert
+            - boolean convert
+        '''
+
+        # Fix column names
+        ''' Note: Yes column names with '.' in them can be escaped with backticks when selecting them BUT
+                  many pipeline operations will FAIL internally if the column names have a '.' in them.
+        '''
+        fixed_columns = list(map(lambda x: x.replace('.', '_'), _df.columns))
+        _df = _df.toDF(*fixed_columns)
 
         # Fill in NULL values
         if fillna:
-            self._df = self._df.na.fill(0)    # For numeric columns
-            self._df = self._df.na.fill('-')  # For string columns
+            _df = _df.na.fill(0)    # For numeric columns
+            _df = _df.na.fill('-')  # For string columns
 
         # Convert timestamp and boolean columns
-        for name, f_type in zip(field_infos.names, field_infos.types):
+        for name, f_type in zip(field_names, field_types):
             # Some field names may have '.' in them, so we create a reference name to those fields
             ref_name = name.replace('.', '_')
             if f_type == 'time':
-                self._df = self._df.withColumn(name, self._df[ref_name].cast('timestamp'))
+                _df = _df.withColumn(name, _df[ref_name].cast('timestamp'))
             if f_type == 'bool':
-                self._df = self._df.withColumn(name, when(col(ref_name) == 'T', 'true').when(col(ref_name) == 'F', 'false')
+                _df = _df.withColumn(name, when(col(ref_name) == 'T', 'true').when(col(ref_name) == 'F', 'false')
                                      .otherwise('null').cast('boolean'))
 
         # Return the spark dataframe
-        return self.self._df
+        return _df
 
-    def _get_dataframe(self, log_infos: ZeekLogInfos, usecols) -> DataFrame:
-        spark_schema = self.build_spark_schema(log_infos.field_names, log_infos.field_types)
+    def _get_dataframe(self, all_fields, column_types) -> DataFrame:
+        spark_schema = self.build_spark_schema(column_names, column_types)
 
         # Now actually read the Zeek Log using Spark read CSV
         return self.spark.read.csv(log_infos.path, schema=spark_schema, sep='\t', comment="#", nullValue='-')
 
-    def _apply_type_map(self, log_infos: ZeekLogInfos, verbose: bool) -> Dict:
+    def _apply_type_map(self, column_names, column_types, verbose: bool) -> Dict:
         """Given a set of names and types, construct a dictionary to be used
            as the Spark read_csv dtypes argument"""
 
@@ -89,7 +105,7 @@ class LogToSparkDF(Converter):
         unknown_type = StringType()
 
         schema = StructType()
-        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
+        for name, zeek_type in zip(column_names, column_types):
 
             # Grab the type
             spark_type = self.type_map.get(zeek_type)

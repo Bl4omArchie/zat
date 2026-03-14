@@ -4,7 +4,7 @@ from pandas import DataFrame
 import polars as pl
 
 # Local
-from zat.base import ZeekLogInfos, Converter
+from zat.base import  Converter
 
 
 class LogToPolars(Converter):
@@ -25,20 +25,20 @@ class LogToPolars(Converter):
         }
         
     
-    def create_dataframe(self, path: str) -> DataFrame:
+    def create_dataframe(self, log_filename: str) -> DataFrame:
         # 1. Get field infos.
-        log_infos = self._get_log_info(path)
+        field_names, field_types = self._get_log_info(log_filename)
 
         # 2. Convert zeek types to polars types.
         #    Replace old types from FieldInfos struct with the converted ones.
-        type_map = self._apply_type_map(log_infos)
+        type_map = self._apply_type_map(field_names, field_types)
 
         # 3. Get dataframe.
-        self._df =  self._get_dataframe(type_map, log_infos)
+        self._df =  self._get_dataframe(type_map, )
 
         # 4. Convert time type.
-        time_cols = [name for name, zt in zip(log_infos.field_names, log_infos.field_types) if zt == "time"]
-        interval_cols = [name for name, zt in zip(log_infos.field_names, log_infos.field_types) if zt == "interval"]
+        time_cols = [name for name, zt in zip(field_names, field_types) if zt == "time"]
+        interval_cols = [name for name, zt in zip(field_names, field_types) if zt == "interval"]
 
         if time_cols:
             self._df = self._df.with_columns(
@@ -52,13 +52,13 @@ class LogToPolars(Converter):
 
         return self._df
   
-    def _get_dataframe(self, type_map: dict, log_infos: ZeekLogInfos) -> DataFrame:
+    def _get_dataframe(self, log_filename: str, type_map: dict, field_names) -> DataFrame:
         """Internal Method: Create the initial dataframes by using Pandas read CSV (primary types correct)"""
-        return pl.read_csv(log_infos.path, separator='\t', has_header=False, new_columns=log_infos.field_names, schema_overrides=type_map, comment_prefix="#", null_values=["-", "NA", ""])
+        return pl.read_csv(log_filename, separator='\t', has_header=False, new_columns=field_names, schema_overrides=type_map, comment_prefix="#", null_values=["-", "NA", ""])
 
-    def _apply_type_map(self, log_infos: ZeekLogInfos) -> Dict:
+    def _apply_type_map(self, column_names, column_types) -> Dict:
         polars_types_map = {}
-        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
+        for name, zeek_type in zip(column_names, column_types):
 
             # Grab the type
             item_type = self.type_map.get(zeek_type)

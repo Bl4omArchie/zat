@@ -1,36 +1,26 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Optional, List, Dict
 
-import fsspec
 from pandas import DataFrame
 
 from zat.zeek_log_reader import ZeekLogReader
 
 
 
-@dataclass
-class ZeekLogInfos:
-    path: str
-    extension: str
-    field_names: List[str]
-    field_types: List[str]
-
-
 class Converter(ABC):
     @abstractmethod
-    def create_dataframe(self, path: str) -> DataFrame:
+    def create_dataframe(self, log_filename: str) -> DataFrame:
         pass
 
     @abstractmethod
-    def _get_dataframe(self, type_map, log_infos: ZeekLogInfos, usecols: Optional[List[str]]) -> DataFrame:
+    def _get_dataframe(self, log_filename: str, all_fields, dtypes: dict, usecols: Optional[List[str]]) -> DataFrame:
         pass
 
     @abstractmethod
-    def _apply_type_map(self, log_infos: ZeekLogInfos) -> Dict:
+    def _apply_type_map(self, column_names, column_types) -> Dict:
         pass
 
-    def _get_log_info(self, path: str) -> ZeekLogInfos:
-        _zeek_reader = ZeekLogReader(path)
-        _, field_names, field_types, _ = _zeek_reader._parse_zeek_header(path)
-        return ZeekLogInfos(path=path, extension=_zeek_reader._extension, field_names = field_names, field_types = field_types)
+    def _get_field_info(self, log_filename: str):
+        _zeek_reader = ZeekLogReader(log_filename)
+        _, field_names, field_types, _ = _zeek_reader._parse_zeek_header(log_filename)
+        return field_names, field_types

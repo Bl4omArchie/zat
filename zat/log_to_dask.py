@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from zat.base import Converter, ZeekLogInfos
+from zat.base import Converter
 
 from pandas import DataFrame
 import dask.dataframe as dd
@@ -19,64 +19,66 @@ class LogToDask(Converter):
                         }
 
 
-    def create_dataframe(self, path: str, ts_index: bool = True, aggressive_category: bool = True, usecols:Optional[List[str]] = None):
-        """ Create a Dask dataframe from a single Bro/Zeek log file
+    def create_dataframe(self, log_filename: str, ts_index: bool = True, aggressive_category: bool = True, usecols:Optional[List[str]] =None):
+        """ Create a Dask dataframe from a Bro/Zeek log file
             Args:
-               log_fllename (string): The full path to the Zeek log
+               log_filename (string): The full path to the Zeek log
                ts_index (bool): Set the index to the 'ts' field (default = True)
                aggressive_category (bool): convert unknown columns to category (default = True)
                usecol (list): A subset of columns to read in (minimizes memory usage) (default = None)
         """
 
-        # 1. Get field infos.
-        log_infos = self._get_log_info(path)
+        # 1. Get log infos.
+        field_names, fiel_types = self._get_log_info(log_filename)
+        all_fields = field_names
 
         # If usecols is set then we'll subset the fields and types
         if usecols:
             # Usecols needs to include ts
             if 'ts' not in usecols:
                 usecols.append('ts')
-            log_infos.field_types = [t for t, field in zip(log_infos.field_types, log_infos.field_names) if field in usecols]
-            log_infos.field_names = [field for field in log_infos.field_names if field in usecols]
+            field_types = [t for t, field in zip(field_types, field_names) if field in usecols]
+            field_names = [field for field in field_names if field in usecols]
 
         # Get the appropriate types for the Pandas Dataframe
-        type_map = self._apply_type_map(log_infos, aggressive_category)
+        type_map = self._apply_type_map(aggressive_category)
 
         # Now actually read in the initial dataframe
-        self._df = self._get_dataframe(type_map, log_infos, usecols)
+        self._df = self._get_dataframe(log_filename, all_fields, type_map, usecols)
 
         # Now we convert 'time' and 'interval' fields to datetime and timedelta respectively
-        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
+        for name, zeek_type in zip(field_names, field_types):
             if zeek_type == 'time':
                 self._df[name] = dd.to_datetime(self._df[name], unit='s')
             if zeek_type == 'interval':
                 self._df[name] = dd.to_timedelta(self._df[name], unit='s')
 
         # Set the index
-        if len(self._df.index) == 0:
+        if ts_index and not self._df.empty:
             try:
                 self._df.set_index('ts', inplace=True)
             except KeyError:
                 print('Could not find ts/timestamp for index...')
         return self._df
+    
 
 
-    def _get_dataframe(self, type_map: dict, log_infos: ZeekLogInfos, usecols) -> DataFrame:
-        """Internal Method: Create the initial dataframes by using Pandas read CSV (primary types correct)"""
-        return dd.read_csv(log_infos.path, sep='\t', names=log_infos.field_names, usecols=usecols, dtype=type_map, comment="#", na_values=["-", "NA", ""])
+    def _get_dataframe(self, log_filename: str, all_fields, usecols: Optional[List[str]], dtypes):
+        """Internal Method: Create the initial dataframes by using dask read CSV (primary types correct)"""
+        return dd.read_csv(log_filename, sep='\t', names=all_fields, usecols=usecols, dtype=dtypes, comment="#", na_values='-')
 
 
-    def _apply_type_map(self, log_infos: ZeekLogInfos, aggressive_category: bool = True, verbose: bool = False) -> Dict:
+    def _apply_type_map(self, column_names, column_types, aggressive_category: bool = True, verbose: bool = False) -> Dict:
         """Given a set of names and types, construct a dictionary to be used
-           as the dask read_csv dtypes argument"""
+           as the Pandas read_csv dtypes argument"""
 
         # Aggressive Category means that types not in the current type_map are
         # mapped to a 'category' if aggressive_category is False then they
         # are mapped to an 'object' type
         unknown_type = 'category' if aggressive_category else 'object'
 
-        dask_types_map = {}
-        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
+        pandas_types = {}
+        for name, zeek_type in zip(column_names, column_types):
 
             # Grab the type
             item_type = self.type_map.get(zeek_type)
@@ -92,10 +94,11 @@ class LogToDask(Converter):
                     item_type = unknown_type
 
             # Set the pandas type
-            dask_types_map[name] = item_type
+            pandas_types[name] = item_type
 
         # Return the dictionary of name: type
-        return dask_types_map
+        return pandas_types
+
 
 
 def test():

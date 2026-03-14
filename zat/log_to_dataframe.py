@@ -6,7 +6,7 @@ from typing import List, Dict, Optional
 import pandas as pd
 
 # Local
-from zat.base import ZeekLogInfos, Converter
+from zat.base import  Converter
 
 
 class LogToDataFrame(Converter):
@@ -32,34 +32,35 @@ class LogToDataFrame(Converter):
                         }
 
 
-    def create_dataframe(self, path: str, ts_index: bool = True, aggressive_category: bool = True, usecols:Optional[List[str]] =None):
+    def create_dataframe(self, log_filename: str, ts_index: bool = True, aggressive_category: bool = True, usecols:Optional[List[str]] =None):
         """ Create a Pandas dataframe from a Bro/Zeek log file
             Args:
-               log_fllename (string): The full path to the Zeek log
+               log_filename (string): The full path to the Zeek log
                ts_index (bool): Set the index to the 'ts' field (default = True)
                aggressive_category (bool): convert unknown columns to category (default = True)
                usecol (list): A subset of columns to read in (minimizes memory usage) (default = None)
         """
 
         # 1. Get log infos.
-        log_infos = self._get_log_info(path)
+        field_names, field_types = self._get_field_info(log_filename)
+        all_fields = field_names
 
         # If usecols is set then we'll subset the fields and types
         if usecols:
             # Usecols needs to include ts
             if 'ts' not in usecols:
                 usecols.append('ts')
-            log_infos.field_types = [t for t, field in zip(log_infos.field_types, log_infos.field_names) if field in usecols]
-            log_infos.field_names = [field for field in log_infos.field_names if field in usecols]
+            field_types = [t for t, field in zip(field_types, field_names) if field in usecols]
+            field_names = [field for field in field_names if field in usecols]
 
         # Get the appropriate types for the Pandas Dataframe
-        type_map = self._apply_type_map(log_infos, aggressive_category)
+        type_map = self._apply_type_map(field_names, field_types, aggressive_category)
 
         # Now actually read in the initial dataframe
-        self._df = self._get_dataframe(type_map, log_infos, usecols)
+        self._df = self._get_dataframe(log_filename, all_fields, type_map, usecols)
 
         # Now we convert 'time' and 'interval' fields to datetime and timedelta respectively
-        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
+        for name, zeek_type in zip(field_names, field_types):
             if zeek_type == 'time':
                 self._df[name] = pd.to_datetime(self._df[name], unit='s')
             if zeek_type == 'interval':
@@ -74,12 +75,12 @@ class LogToDataFrame(Converter):
         return self._df
     
 
-    def _get_dataframe(self, type_map, log_infos: ZeekLogInfos, usecols: Optional[List[str]]):
+    def _get_dataframe(self, log_filename: str, all_fields, usecols: Optional[List[str]], dtypes):
         """Internal Method: Create the initial dataframes by using Pandas read CSV (primary types correct)"""
-        return pd.read_csv(log_infos.path, sep='\t', names=log_infos.field_names, usecols=usecols, dtype=type_map, comment="#", na_values='-')
+        return pd.read_csv(log_filename, sep='\t', names=all_fields, usecols=usecols, dtype=dtypes, comment="#", na_values='-')
 
 
-    def _apply_type_map(self, log_infos: ZeekLogInfos, aggressive_category: bool = True, verbose: bool = False) -> Dict:
+    def _apply_type_map(self, column_names, column_types, aggressive_category: bool = True, verbose: bool = False) -> Dict:
         """Given a set of names and types, construct a dictionary to be used
            as the Pandas read_csv dtypes argument"""
 
@@ -88,8 +89,8 @@ class LogToDataFrame(Converter):
         # are mapped to an 'object' type
         unknown_type = 'category' if aggressive_category else 'object'
 
-        pandas_types_map = {}
-        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
+        pandas_types = {}
+        for name, zeek_type in zip(column_names, column_types):
 
             # Grab the type
             item_type = self.type_map.get(zeek_type)
@@ -105,10 +106,10 @@ class LogToDataFrame(Converter):
                     item_type = unknown_type
 
             # Set the pandas type
-            pandas_types_map[name] = item_type
+            pandas_types[name] = item_type
 
         # Return the dictionary of name: type
-        return pandas_types_map
+        return pandas_types
 
 
 # Simple test of the functionality
