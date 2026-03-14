@@ -1,4 +1,6 @@
-from zat.base import Converter, FieldInfos
+import fsspec
+
+from zat.base import ZeekLogInfos, Converter
 from zat.zeek_log_reader import ZeekLogReader
 
 # Third Party
@@ -8,14 +10,14 @@ try:
 except ImportError:
     print('\npip install pyspark')
 
-
+from typing import Dict
 from pandas import DataFrame
 
 
-class LogToSpark(Converter):
+class LogToSparkDF(Converter):
     """LogToSparkDF: Converts a Zeek log to a Spark DataFrame"""
 
-    def __init__(self, spark):
+    def __init__(self, fs: fsspec.filesystem, spark):
         """Initialize the LogToSparkDF class"""
 
         # Grab the spark context
@@ -38,6 +40,8 @@ class LogToSpark(Converter):
                          'addr': StringType(),
                          'string': StringType()
                          }
+        
+        super().__init__(fs)
 
     def create_dataframe(self, path: str, fillna=True) -> DataFrame:
         # 1. Get field infos.
@@ -71,18 +75,13 @@ class LogToSpark(Converter):
         # Return the spark dataframe
         return self.self._df
 
-    def _get_field_info(self, path: str) -> FieldInfos:
-        _zeek_reader = ZeekLogReader(path)
-        _, field_names, field_types, _ = _zeek_reader._parse_zeek_header(path)
-        return FieldInfos(names=field_names, types=field_types)
-
-    def _get_dataframe(self, path: str, field_infos: FieldInfos, usecols) -> DataFrame:
-        spark_schema = self.build_spark_schema(field_infos.names, field_infos.types)
+    def _get_dataframe(self, log_infos: ZeekLogInfos, usecols) -> DataFrame:
+        spark_schema = self.build_spark_schema(log_infos.field_names, log_infos.field_types)
 
         # Now actually read the Zeek Log using Spark read CSV
-        return self.spark.read.csv(path, schema=spark_schema, sep='\t', comment="#", nullValue='-')
+        return self.spark.read.csv(log_infos.path, schema=spark_schema, sep='\t', comment="#", nullValue='-')
 
-    def _apply_type_map(self, field_infos: FieldInfos, verbose:bool = False):
+    def _apply_type_map(self, log_infos: ZeekLogInfos, verbose: bool) -> Dict:
         """Given a set of names and types, construct a dictionary to be used
            as the Spark read_csv dtypes argument"""
 
@@ -90,7 +89,7 @@ class LogToSpark(Converter):
         unknown_type = StringType()
 
         schema = StructType()
-        for name, zeek_type in zip(field_infos.names, field_infos.types):
+        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
 
             # Grab the type
             spark_type = self.type_map.get(zeek_type)

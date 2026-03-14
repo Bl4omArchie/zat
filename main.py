@@ -1,6 +1,6 @@
-from zatv2 import test_converter
-from zat.log_to_dataframe import test
+from zat import log_to_dataframe, log_to_dask, log_to_polars, zat
 
-
-test()
-#test_converter.main()
+log_to_dataframe.test()
+log_to_dask.test()
+log_to_polars.test()
+#zat.test()

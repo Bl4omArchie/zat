@@ -2,14 +2,15 @@
 
 
 # Third Party
+from typing import List, Dict, Optional
+import fsspec
 import pandas as pd
 
 # Local
-from zat import zeek_log_reader
-from zat.base import FieldInfos
+from zat.base import ZeekLogInfos, Converter
 
 
-class LogToDataFrame(object):
+class LogToDataFrame(Converter):
     """LogToDataFrame: create_dataframes a Zeek log to a Pandas DataFrame
         Notes:
             This class has recently been overhauled from a simple loader to a more
@@ -20,52 +21,47 @@ class LogToDataFrame(object):
             If you have any issues/problems with this class please submit a GitHub issue.
         More Info: https://supercowpowers.github.io/zat/large_dataframes.html
     """
-    def __init__(self):
-        """Initialize the LogToDataFrame class"""
-
-        # First Level Type Mapping
-        #    This map defines the types used when first reading in the Zeek log into a 'chunk' dataframes.
-        #    Types (like time and interval) will be defined as one type at first but then
-        #    will undergo further processing to produce correct types with correct values.
-        # See: https://stackoverflow.com/questions/29245848/what-are-all-the-dtypes-that-pandas-recognizes
-        #      for more info on supported types.
+    def __init__(self, fs: fsspec.filesystem):
         self.type_map = {'bool': 'category',  # Can't hold NaN values in 'bool', so we're going to use category
-                         'count': 'UInt64',
-                         'int': 'Int32',
-                         'double': 'float',
-                         'time': 'float',      # Secondary Processing into datetime
-                         'interval': 'float',  # Secondary processing into timedelta
-                         'port': 'UInt16'
-                         }
+                        'count': 'UInt64',
+                        'int': 'Int32',
+                        'double': 'float',
+                        'time': 'float',      # Secondary Processing into datetime
+                        'interval': 'float',  # Secondary processing into timedelta
+                        'port': 'UInt16'
+                        }
 
-    def create_dataframe(self, path: str, ts_index: bool = True, aggressive_category: bool = True, usecols:bool =None):
+        super().__init__(fs)
+
+
+    def create_dataframe(self, path: str, ts_index: bool = True, aggressive_category: bool = True, usecols:Optional[List[str]] =None):
         """ Create a Pandas dataframe from a Bro/Zeek log file
             Args:
                log_fllename (string): The full path to the Zeek log
                ts_index (bool): Set the index to the 'ts' field (default = True)
-               aggressive_category (bool): create_dataframe unknown columns to category (default = True)
+               aggressive_category (bool): convert unknown columns to category (default = True)
                usecol (list): A subset of columns to read in (minimizes memory usage) (default = None)
         """
 
-        # 1. Get field infos.
-        field_infos = self._get_field_info(path)
+        # 1. Get log infos.
+        log_infos = self._get_log_info(path)
 
         # If usecols is set then we'll subset the fields and types
         if usecols:
             # Usecols needs to include ts
             if 'ts' not in usecols:
                 usecols.append('ts')
-            field_types = [t for t, field in zip(field_infos.types, field_infos.names) if field in usecols]
-            field_names = [field for field in field_infos.names if field in usecols]
+            log_infos.field_types = [t for t, field in zip(log_infos.field_types, log_infos.field_names) if field in usecols]
+            log_infos.field_names = [field for field in log_infos.field_names if field in usecols]
 
         # Get the appropriate types for the Pandas Dataframe
-        field_infos.types = self._apply_type_map(field_infos, aggressive_category)
+        type_map = self._apply_type_map(log_infos, aggressive_category)
 
         # Now actually read in the initial dataframe
-        self._df = self._get_dataframe(path, field_infos, usecols)
+        self._df = self._get_dataframe(type_map, log_infos, usecols)
 
-        # Now we create_dataframe 'time' and 'interval' fields to datetime and timedelta respectively
-        for name, zeek_type in zip(field_infos.names, field_infos.types):
+        # Now we convert 'time' and 'interval' fields to datetime and timedelta respectively
+        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
             if zeek_type == 'time':
                 self._df[name] = pd.to_datetime(self._df[name], unit='s')
             if zeek_type == 'interval':
@@ -78,18 +74,14 @@ class LogToDataFrame(object):
             except KeyError:
                 print('Could not find ts/timestamp for index...')
         return self._df
-
-    def _get_field_info(self, path: str) -> FieldInfos:
-        """Internal Method: Use ZAT log reader to read header for names and types"""
-        _zeek_reader = zeek_log_reader.ZeekLogReader(path)
-        _, field_names, field_types, _ = _zeek_reader._parse_zeek_header(path)
-        return FieldInfos(names=field_names, types=field_types)
-
-    def _get_dataframe(self, path: str, field_infos: FieldInfos, usecols: bool):
+    
+    
+    def _get_dataframe(self, type_map, log_infos: ZeekLogInfos, usecols: Optional[List[str]]):
         """Internal Method: Create the initial dataframes by using Pandas read CSV (primary types correct)"""
-        return pd.read_csv(path, sep='\t', names=field_infos.names, usecols=usecols, dtype=field_infos.types, comment="#", na_values='-')
+        return pd.read_csv(log_infos.path, sep='\t', names=log_infos.field_names, usecols=usecols, dtype=type_map, comment="#", na_values='-')
 
-    def _apply_type_map(self, fiel_infos: FieldInfos, aggressive_category: bool = True, verbose: bool = False):
+
+    def _apply_type_map(self, log_infos: ZeekLogInfos, aggressive_category: bool = True, verbose: bool = False) -> Dict:
         """Given a set of names and types, construct a dictionary to be used
            as the Pandas read_csv dtypes argument"""
 
@@ -99,7 +91,7 @@ class LogToDataFrame(object):
         unknown_type = 'category' if aggressive_category else 'object'
 
         pandas_types_map = {}
-        for name, zeek_type in zip(fiel_infos.names, fiel_infos.types):
+        for name, zeek_type in zip(log_infos.field_names, log_infos.field_types):
 
             # Grab the type
             item_type = self.type_map.get(zeek_type)
@@ -132,8 +124,11 @@ def test():
     data_path = file_utils.relative_dir(__file__, '../data')
     log_path = os.path.join(data_path, 'conn.log')
 
+    # Fsspec
+    fs = fsspec.filesystem("local")
+
     # create_dataframe it to a Pandas DataFrame
-    log_to_df = LogToDataFrame()
+    log_to_df = LogToDataFrame(fs)
     my_df = log_to_df.create_dataframe(log_path)
 
     # Print out the head
