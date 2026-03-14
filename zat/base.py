@@ -18,9 +18,6 @@ class ZeekLogInfos:
 
 
 class Converter(ABC):
-    def __init__(self, fs: fsspec.filesystem):
-        self.fs = fs
-
     @abstractmethod
     def create_dataframe(self, path: str) -> DataFrame:
         pass
@@ -34,6 +31,6 @@ class Converter(ABC):
         pass
 
     def _get_log_info(self, path: str) -> ZeekLogInfos:
-        _zeek_reader = ZeekLogReader(path, self.fs)
+        _zeek_reader = ZeekLogReader(path)
         _, field_names, field_types, _ = _zeek_reader._parse_zeek_header(path)
         return ZeekLogInfos(path=path, extension=_zeek_reader._extension, field_names = field_names, field_types = field_types)

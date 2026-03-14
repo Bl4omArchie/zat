@@ -1,6 +1,5 @@
 # Third Party
 from typing import Dict
-import fsspec
 from pandas import DataFrame
 import polars as pl
 
@@ -9,7 +8,7 @@ from zat.base import ZeekLogInfos, Converter
 
 
 class LogToPolars(Converter):
-    def __init__(self, fs: fsspec.filesystem):
+    def __init__(self):
         # Polars data types : https://docs.pola.rs/api/python/stable/reference/datatypes.html
         self.type_map = {
             'str': pl.String,
@@ -25,7 +24,6 @@ class LogToPolars(Converter):
             'enum': pl.Categorical,
         }
         
-        super().__init__(fs)
     
     def create_dataframe(self, path: str) -> DataFrame:
         # 1. Get field infos.
@@ -77,6 +75,5 @@ class LogToPolars(Converter):
 
 
 def test():
-    fs = fsspec.filesystem("local")
-    obj = LogToPolars(fs)
+    obj = LogToPolars()
     obj.create_dataframe("data/conn.log")

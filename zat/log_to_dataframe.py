@@ -3,7 +3,6 @@
 
 # Third Party
 from typing import List, Dict, Optional
-import fsspec
 import pandas as pd
 
 # Local
@@ -21,17 +20,16 @@ class LogToDataFrame(Converter):
             If you have any issues/problems with this class please submit a GitHub issue.
         More Info: https://supercowpowers.github.io/zat/large_dataframes.html
     """
-    def __init__(self, fs: fsspec.filesystem):
+    def __init__(self):
         self.type_map = {'bool': 'category',  # Can't hold NaN values in 'bool', so we're going to use category
                         'count': 'UInt64',
                         'int': 'Int32',
                         'double': 'float',
                         'time': 'float',      # Secondary Processing into datetime
                         'interval': 'float',  # Secondary processing into timedelta
-                        'port': 'UInt16'
+                        'port': 'UInt16',
+                        'addr': 'string'
                         }
-
-        super().__init__(fs)
 
 
     def create_dataframe(self, path: str, ts_index: bool = True, aggressive_category: bool = True, usecols:Optional[List[str]] =None):
@@ -75,7 +73,7 @@ class LogToDataFrame(Converter):
                 print('Could not find ts/timestamp for index...')
         return self._df
     
-    
+
     def _get_dataframe(self, type_map, log_infos: ZeekLogInfos, usecols: Optional[List[str]]):
         """Internal Method: Create the initial dataframes by using Pandas read CSV (primary types correct)"""
         return pd.read_csv(log_infos.path, sep='\t', names=log_infos.field_names, usecols=usecols, dtype=type_map, comment="#", na_values='-')
@@ -124,11 +122,8 @@ def test():
     data_path = file_utils.relative_dir(__file__, '../data')
     log_path = os.path.join(data_path, 'conn.log')
 
-    # Fsspec
-    fs = fsspec.filesystem("local")
-
     # create_dataframe it to a Pandas DataFrame
-    log_to_df = LogToDataFrame(fs)
+    log_to_df = LogToDataFrame()
     my_df = log_to_df.create_dataframe(log_path)
 
     # Print out the head

@@ -1,7 +1,5 @@
 from typing import Dict, List, Optional
 
-import fsspec
-
 from zat.base import Converter, ZeekLogInfos
 
 from pandas import DataFrame
@@ -9,17 +7,16 @@ import dask.dataframe as dd
 
 
 class LogToDask(Converter):
-    def __init__(self, fs: fsspec.filesystem):
+    def __init__(self):
         self.type_map = {'bool': 'category',  # Can't hold NaN values in 'bool', so we're going to use category
                         'count': 'UInt64',
                         'int': 'Int32',
                         'double': 'float',
                         'time': 'float',      # Secondary Processing into datetime
                         'interval': 'float',  # Secondary processing into timedelta
-                        'port': 'UInt16'
+                        'port': 'UInt16',
+                        'addr': 'string'
                         }
-        
-        super().__init__(fs)
 
 
     def create_dataframe(self, path: str, ts_index: bool = True, aggressive_category: bool = True, usecols:Optional[List[str]] = None):
@@ -102,6 +99,5 @@ class LogToDask(Converter):
 
 
 def test():
-    fs = fsspec.filesystem("local")
-    obj = LogToDask(fs)
+    obj = LogToDask()
     obj.create_dataframe("data/conn.log")

@@ -11,7 +11,6 @@
 import os
 from pathlib import Path
 import time
-import fsspec
 import datetime
 
 # Local Imports
@@ -31,7 +30,7 @@ class ZeekLogReader(file_tailer.FileTailer):
                 strict (bool): Raise an exception on conversions errors (default=False)
     """
 
-    def __init__(self, filepath: str, fs: fsspec.filesystem, delimiter='\t', tail=False, strict=False):
+    def __init__(self, filepath: str, delimiter='\t', tail=False, strict=False):
         """Initialization for the ZeekLogReader Class"""
 
         # First check if the file exists and is readable
@@ -40,7 +39,6 @@ class ZeekLogReader(file_tailer.FileTailer):
 
         # Setup some class instance vars
         self._filepath = filepath
-        self._filesystem = fs
         self._delimiter = delimiter
         self._extension = Path(filepath).suffix
         self._tail = tail
@@ -131,7 +129,7 @@ class ZeekLogReader(file_tailer.FileTailer):
         """
 
         # Open the Zeek logfile
-        with self._filesystem.open(zeek_log, 'r') as zeek_file:
+        with open(zeek_log, 'r') as zeek_file:
 
             # Skip until you find the #fields line
             _line = zeek_file.readline()
