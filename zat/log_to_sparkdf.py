@@ -1,4 +1,7 @@
-"""LogToSparkDF: Converts a Zeek log to a Spark DataFrame"""
+import fsspec
+
+from zat.base import  Converter
+from zat import zeek_log_reader
 
 # Third Party
 try:
@@ -7,12 +10,10 @@ try:
 except ImportError:
     print('\npip install pyspark')
 
-
-# Local
-from zat import zeek_log_reader
+from typing import Dict, List, Tuple
 
 
-class LogToSparkDF(object):
+class LogToSparkDF(Converter):
     """LogToSparkDF: Converts a Zeek log to a Spark DataFrame"""
 
     def __init__(self, spark):
@@ -38,8 +39,9 @@ class LogToSparkDF(object):
                          'addr': StringType(),
                          'string': StringType()
                          }
+        
 
-    def create_dataframe(self, log_filename, fillna=True):
+    def create_dataframe(self, log_filename: str, fillna=True):
         """ Create a Spark dataframe from a Bro/Zeek log file
             Args:
                log_fllename (string): The full path to the Zeek log
@@ -47,13 +49,10 @@ class LogToSparkDF(object):
         """
 
         # Create a Zeek log reader just to read in the header for names and types
-        _zeek_reader = zeek_log_reader.ZeekLogReader(log_filename)
-        _, field_names, field_types, _ = _zeek_reader._parse_zeek_header(log_filename)
+        field_names, field_types = self._get_field_info(log_filename=log_filename)
 
-        # Get the appropriate types for the Spark Dataframe
-        spark_schema = self.build_spark_schema(field_names, field_types)
+        spark_schema = self._apply_type_map(column_names=field_names, column_types=field_types)
 
-        # Now actually read the Zeek Log using Spark read CSV
         _df = self.spark.read.csv(log_filename, schema=spark_schema, sep='\t', comment="#", nullValue='-')
 
         ''' Secondary processing (cleanup)
@@ -83,13 +82,20 @@ class LogToSparkDF(object):
                 _df = _df.withColumn(name, _df[ref_name].cast('timestamp'))
             if f_type == 'bool':
                 _df = _df.withColumn(name, when(col(ref_name) == 'T', 'true').when(col(ref_name) == 'F', 'false')
-                                     .otherwise('null').cast('boolean'))
+                                     .otherwise(None).cast('boolean'))
 
         # Return the spark dataframe
         return _df
 
-    def build_spark_schema(self, column_names, column_types, verbose=False):
-        """Given a set of names and types, construct a dictionary to be used
+
+    def _get_dataframe(self, log_filename: str, all_fields: List[str], dtype: Dict):
+        # As the _get_dataframe method for sparkdf couldn't match the signature of the abstract class.
+        # This function will be empty and the dataframe will gathered directly in create_dataframe.
+        pass
+
+
+    def _apply_type_map(self, column_names: List[str], column_types: List[str], verbose: bool = False) -> Tuple[List[str], List[str]]:
+        """Given a set of names and types, construct a Dictionary to be used
            as the Spark read_csv dtypes argument"""
 
         # If we don't know the type put it into a string
@@ -112,6 +118,7 @@ class LogToSparkDF(object):
 
         # Return the Spark schema
         return schema
+
 
 
 # Simple test of the functionality
