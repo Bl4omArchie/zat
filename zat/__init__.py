@@ -1,3 +1,9 @@
 __author__ = "Brian Wylie"
 __email__ = "support@supercowpowers.com"
-__version__ = "0.4.7"
+
+from importlib.metadata import version
+
+try:
+    __version__ = version("zat")
+except Exception:
+    __version__ = "unknown"

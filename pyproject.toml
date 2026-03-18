@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=68.0", "wheel", "setuptools_scm>=6.4.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "zat"
-version = "0.4.7"
+dynamic = ["version"]
 description = "Zeek Analysis Tools"
 readme = "README.md"
 license = "MIT"
@@ -37,6 +37,10 @@ all = ["pyspark", "pyarrow", "yara-python", "tldextract"]
 [project.urls]
 Homepage = "https://github.com/SuperCowPowers/zat"
 Repository = "https://github.com/SuperCowPowers/zat"
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "dirty-tag"
 
 [tool.setuptools.packages.find]
 include = ["zat*"]
