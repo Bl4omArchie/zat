@@ -1,19 +1,18 @@
 """Anomaly Detection Example"""
 
-import os
-import sys
 import argparse
 import math
+import os
+import sys
 from collections import Counter
 
 # Third Party Imports
 import pandas as pd
-from sklearn.ensemble import IsolationForest
 from sklearn.cluster import KMeans
+from sklearn.ensemble import IsolationForest
 
 # Local imports
-from zat import log_to_dataframe
-from zat import dataframe_to_matrix
+from zat import dataframe_to_matrix, log_to_dataframe
 
 
 def entropy(string):

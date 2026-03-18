@@ -1,18 +1,18 @@
 # Example that demonstrates going from Zeek data to scikit-learn models
 
+import argparse
 import os
 import sys
-import argparse
+
+import numpy as np
 
 # Third Party Imports
 import pandas as pd
-from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-import numpy as np
+from sklearn.decomposition import PCA
 
 # Local imports
-from zat import log_to_dataframe
-from zat import dataframe_to_matrix
+from zat import dataframe_to_matrix, log_to_dataframe
 
 
 # Helper method for scatter/beeswarm plot

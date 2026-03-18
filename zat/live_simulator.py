@@ -6,10 +6,10 @@ Args:
     max_rows (int): The maximum number of rows to generate (default = None (go forever))
 """
 
-import os
-import time
 import datetime
 import itertools
+import os
+import time
 
 # Third party
 import numpy as np

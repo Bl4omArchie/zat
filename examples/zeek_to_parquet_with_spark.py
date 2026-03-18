@@ -1,8 +1,8 @@
 """Zeek log to Parquet Dataframe Example"""
 
+import argparse
 import os
 import sys
-import argparse
 
 try:
     from pyspark.sql import SparkSession

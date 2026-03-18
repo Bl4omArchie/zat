@@ -1,8 +1,8 @@
 """VTQuery Class"""
 
 import collections
-import time
 import pprint
+import time
 
 # Third Party
 import requests

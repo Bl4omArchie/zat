@@ -4,10 +4,10 @@ $ git clone https://github.com/Yara-Rules/rules rules
 $ python yara_matches -r /path/to/rules/index.yar -e /path/to/zeek/extract_files
 """
 
+import argparse
 import os
 import sys
 import time
-import argparse
 from pprint import pprint
 
 # Third Party Imports

@@ -8,9 +8,9 @@ Args:
      tail (bool): Do a dynamic tail on the file (i.e. tail -f) (default=False)
 """
 
+import datetime
 import os
 import time
-import datetime
 
 # Local Imports
 from zat.utils import file_tailer, file_utils

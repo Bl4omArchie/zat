@@ -100,6 +100,7 @@ def test():
     """Test for DataFrame Stats module"""
 
     import os
+
     from zat.utils import file_utils
 
     # Open a dataset (relative path)

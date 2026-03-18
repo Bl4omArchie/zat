@@ -1,20 +1,19 @@
 """FileTailer Python Class"""
 
+import argparse
+import math
 import os
 import sys
-import argparse
 import time
-import math
 from collections import Counter
 
 # Third Party Imports
 import pandas as pd
-from sklearn.ensemble import IsolationForest
 from sklearn.cluster import MiniBatchKMeans
+from sklearn.ensemble import IsolationForest
 
 # Local imports
-from zat import zeek_log_reader, live_simulator
-from zat import dataframe_to_matrix, dataframe_cache
+from zat import dataframe_cache, dataframe_to_matrix, live_simulator, zeek_log_reader
 
 
 def entropy(string):

@@ -1,8 +1,8 @@
 """FileTailer Python Class"""
 
+import argparse
 import os
 import sys
-import argparse
 from pprint import pprint
 
 # Local imports

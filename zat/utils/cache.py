@@ -1,9 +1,9 @@
 """Cache class for key/value pairs"""
 
+import atexit
+import pickle
 import time
 from collections import OrderedDict
-import pickle
-import atexit
 
 # Local imports
 from zat.utils import file_storage

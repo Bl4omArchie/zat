@@ -1,8 +1,8 @@
 """Zeek log to Parquet Dataframe Example"""
 
+import argparse
 import os
 import sys
-import argparse
 
 # Note: We're going to import pyarrow but it currently has an open issue around supporting time deltas
 #    - https://issues.apache.org/jira/browse/ARROW-6780 so we have to convert timedelta fields to str
@@ -10,6 +10,7 @@ import argparse
 #   - https://stackoverflow.com/questions/53893554/transfer-and-write-parquet-with-python-and-pandas-got-timestamp-error
 #
 from datetime import timedelta
+
 import pandas as pd
 
 try:

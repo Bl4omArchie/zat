@@ -3,7 +3,7 @@
 import socket
 
 # Local imports
-from zat.utils import net_utils, cache
+from zat.utils import cache, net_utils
 
 
 class ReverseDNS(object):

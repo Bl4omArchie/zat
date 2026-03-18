@@ -1,8 +1,8 @@
 """Run a VirusTotal Query on Extracted File Hashes"""
 
+import argparse
 import os
 import sys
-import argparse
 from pprint import pprint
 
 # Local imports

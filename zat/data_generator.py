@@ -3,9 +3,10 @@ are much better, but we just need something simple"""
 
 import string
 
+import numpy as np
+
 # Third Party
 import pandas as pd
-import numpy as np
 
 
 def df_random(num_numeric=3, num_categorical=3, num_rows=100):

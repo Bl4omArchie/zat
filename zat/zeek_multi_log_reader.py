@@ -1,8 +1,8 @@
 """ZeekMultiLogReader: This class reads in multiple Zeek logs"""
 
-import os
 import glob
 import gzip
+import os
 import tempfile
 
 # Local Imports

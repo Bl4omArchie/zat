@@ -1,10 +1,11 @@
 """Risky DNS zat Example"""
 
-import sys
 import argparse
-from pprint import pprint
-import pickle
 import json
+import pickle
+import sys
+from pprint import pprint
+
 from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable
 
@@ -16,7 +17,7 @@ except ImportError:
     sys.exit(1)
 
 # Local imports
-from zat.utils import vt_query, signal_utils
+from zat.utils import signal_utils, vt_query
 
 
 def save_vtq():

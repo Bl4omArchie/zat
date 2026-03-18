@@ -1,10 +1,10 @@
 """Risky DNS zat Example"""
 
-import os
-import sys
 import argparse
-from pprint import pprint
+import os
 import pickle
+import sys
+from pprint import pprint
 
 # Third Party Imports
 try:
@@ -15,7 +15,7 @@ except ImportError:
 
 # Local imports
 from zat import zeek_log_reader
-from zat.utils import vt_query, signal_utils
+from zat.utils import signal_utils, vt_query
 
 
 def save_vtq():

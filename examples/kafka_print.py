@@ -1,9 +1,10 @@
 """Read Kafka Streams and Print out the messages"""
 
-import sys
 import argparse
-from pprint import pprint
 import json
+import sys
+from pprint import pprint
+
 from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable
 

@@ -1,8 +1,8 @@
 """Zeek ^JSON^ log to Pandas Dataframe Example"""
 
+import argparse
 import os
 import sys
-import argparse
 
 # Local imports
 from zat.json_log_to_dataframe import JSONLogToDataFrame

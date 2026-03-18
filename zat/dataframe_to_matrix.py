@@ -1,8 +1,8 @@
 """DataFrameToMatrix: Class that converts a DataFrame to a Numpy Matrix (ndarray)"""
 
 # Third Party
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 class DataFrameToMatrix:
@@ -191,6 +191,7 @@ def test():
     import os
     import pickle
     from tempfile import NamedTemporaryFile
+
     import numpy.testing as np_test_utils
 
     pd.set_option("display.width", 1000)

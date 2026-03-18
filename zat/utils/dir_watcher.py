@@ -3,9 +3,10 @@
 import os
 import time
 
+from watchdog.events import FileSystemEventHandler
+
 # Other Imports
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
 # Local Imports
 from zat.utils import file_utils

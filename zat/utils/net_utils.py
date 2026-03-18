@@ -1,8 +1,8 @@
 """Network utilities that might be useful"""
 
-import socket
 import binascii
 import ipaddress
+import socket
 
 
 def mac_to_str(address):

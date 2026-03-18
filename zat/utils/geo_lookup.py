@@ -1,7 +1,7 @@
 """GeoLookup Class"""
 
-import time
 import pprint
+import time
 
 # Third Party
 import requests

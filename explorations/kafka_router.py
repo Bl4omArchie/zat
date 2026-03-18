@@ -1,11 +1,12 @@
 """KafkaRouter: The class takes in N Kafka input topics and produces M Kafka output topics"""
 
-import sys
-from kafka import KafkaProducer, KafkaConsumer
-from kafka.errors import NoBrokersAvailable
-from collections import defaultdict
 import json
+import sys
+from collections import defaultdict
 from datetime import datetime
+
+from kafka import KafkaConsumer, KafkaProducer
+from kafka.errors import NoBrokersAvailable
 
 # Local imports
 from zat.utils import signal_utils

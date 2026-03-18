@@ -2,8 +2,8 @@
 
 # Third Party
 try:
-    from pyspark.sql.types import StructType, StringType, IntegerType, FloatType, LongType, DoubleType
     from pyspark.sql.functions import col, when
+    from pyspark.sql.types import DoubleType, FloatType, IntegerType, LongType, StringType, StructType
 except ImportError:
     print("\npip install pyspark")
 
@@ -124,7 +124,9 @@ class LogToSparkDF(object):
 def test():
     """Test for LogToSparkDF Class"""
     import os
+
     import pytest
+
     from zat.utils import file_utils
 
     try:
