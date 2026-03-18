@@ -1,7 +1,7 @@
 <img align="right" style="padding:35px" src="notebooks/images/SCP_med.png" width="160">
 
 # Zeek Analysis Tools (ZAT) 
-[![supported-versions](https://img.shields.io/pypi/pyversions/zat.svg)](https://pypi.python.org/pypi/zat) [![coverage](coverage.svg)](coverage.svg) [![license](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit)
+[![supported-versions](https://img.shields.io/pypi/pyversions/zat.svg)](https://pypi.python.org/pypi/zat) [![license](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit)
 
 The ZAT Python package supports the processing and analysis of Zeek data
 with Pandas, scikit-learn, Kafka, and Spark
