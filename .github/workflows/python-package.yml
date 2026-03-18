@@ -63,12 +63,24 @@ jobs:
     - name: Generate coverage report
       run: |
         pytest --cov=zat zat
-        coverage xml
+        coverage json
 
     - name: Generate coverage badge
-      uses: tj-actions/coverage-badge-py@v2
-      with:
-        output: coverage.svg
+      run: |
+        python -c "
+        import json
+        with open('coverage.json') as f:
+            pct = int(json.load(f)['totals']['percent_covered_display'].split('.')[0])
+        if pct >= 90: color = 'brightgreen'
+        elif pct >= 80: color = 'green'
+        elif pct >= 70: color = 'yellowgreen'
+        elif pct >= 60: color = 'yellow'
+        else: color = 'red'
+        import urllib.request
+        url = f'https://img.shields.io/badge/coverage-{pct}%25-{color}'
+        urllib.request.urlretrieve(url, 'coverage.svg')
+        print(f'Coverage: {pct}% ({color})')
+        "
 
     - name: Commit coverage badge
       run: |
