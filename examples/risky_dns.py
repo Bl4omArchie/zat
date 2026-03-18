@@ -20,7 +20,7 @@ from zat.utils import vt_query, signal_utils
 
 def save_vtq():
     """Exit on Signal"""
-    global vtq
+    global vtq  # noqa: F824
 
     print('Saving VirusTotal Query Cache...')
     pickle.dump(vtq, open('vtq.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
@@ -29,7 +29,6 @@ def save_vtq():
 
 if __name__ == '__main__':
     # Risky DNS/VT Query application
-    global vtq
 
     # Collect args from the command line
     parser = argparse.ArgumentParser()

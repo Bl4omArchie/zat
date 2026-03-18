@@ -7,7 +7,7 @@ from time import sleep
 try:
     from pyspark.sql import SparkSession
     from pyspark.sql.types import StructType, StringType, BooleanType, IntegerType
-    from pyspark.sql.functions import from_json, to_json, col, struct, udf
+    from pyspark.sql.functions import from_json, col, udf
 except ImportError:
     print('\npip install pyspark')
     sys.exit(1)
@@ -49,14 +49,14 @@ if __name__ == '__main__':
 
     # Spin up a local Spark Session (with 4 executors)
     spark = SparkSession.builder.master('local[4]').appName('my_awesome') \
-            .config('spark.jars.packages', 'org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.4') \
-            .getOrCreate()
+        .config('spark.jars.packages', 'org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.4') \
+        .getOrCreate()
     spark.sparkContext.setLogLevel('ERROR')
 
     # Optimize the conversion to Spark
     spark.conf.set("spark.sql.execution.arrow.enable", "true")
 
-    # SUBSCRIBE: Setup connection to Kafka Stream 
+    # SUBSCRIBE: Setup connection to Kafka Stream
     raw_data = spark.readStream.format('kafka').option('kafka.bootstrap.servers', kserver) \
                                                .option('subscribe', 'dns') \
                                                .option('startingOffsets', 'earliest').load()
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     parsed_data = raw_data.select(from_json(col('value').cast('string'), dns_schema).alias('data')).select('data.*')
 
     # FILTER: Only get DNS records that have 'query' field filled out
-    filtered_data = parsed_data.filter(parsed_data.query.isNotNull() & (parsed_data.query!='')==True)
+    filtered_data = parsed_data.filter(parsed_data.query.isNotNull() & (parsed_data.query != ''))
 
     # FILTER 2: Remove Local/mDNS queries
     filtered_data = filtered_data.filter(~filtered_data.query.like('%.local'))  # Note: using the '~' negation operator

@@ -16,10 +16,10 @@ if __name__ == '__main__':
     # https://docs.zeek.org/en/main/script-reference/proto-analyzers.html#zeek-ssl
 
     # Set up the regex search that is used against the issuer field
-    issuer_regex = re.compile('CN=www.\w+.com')
+    issuer_regex = re.compile(r'CN=www.\w+.com')
 
     # Set up the regex search that is used against the subject field
-    subject_regex = re.compile('CN=www.\w+.net')
+    subject_regex = re.compile(r'CN=www.\w+.net')
 
     # Collect args from the command line
     parser = argparse.ArgumentParser()
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                 if subject_regex.match(subject):
                     print('\nPossible Tor connection found')
                     print('From: {:s} To: {:s} Port: {:d}'.format(row['id.orig_h'], row['id.resp_h'], row['id.resp_p']))
-                    number +=1
+                    number += 1
 
         # If we are not tailing a live log file, let's print some stats.
         if not args.t:

@@ -11,7 +11,7 @@ import argparse
 from datetime import timedelta
 import pandas as pd
 try:
-    import pyarrow
+    import pyarrow  # noqa: F401
 except ImportError:
     print('Please > pip install pyarrow')
     sys.exit(1)

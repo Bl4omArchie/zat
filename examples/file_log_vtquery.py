@@ -37,14 +37,14 @@ if __name__ == '__main__':
         # Run the zeek reader on a given log file
         reader = zeek_log_reader.ZeekLogReader(args.zeek_log, tail=True)
         for row in reader.readrows():
-            file_sha = row.get('sha256', '-') # Zeek uses - for empty field
+            file_sha = row.get('sha256', '-')  # Zeek uses - for empty field
             if file_sha == '-':
-                file_sha = row.get('sha1', '-') # Zeek uses - for empthy field
+                file_sha = row.get('sha1', '-')  # Zeek uses - for empthy field
                 if file_sha == '-':
                     print('Should not find a sha256 or a sha1 key! Skipping...')
                     continue
 
             # Make the query with either sha
             results = vtq.query_file(file_sha)
-            if results.get('positives', 0) > 1: # At least two hits
+            if results.get('positives', 0) > 1:  # At least two hits
                 pprint(results)

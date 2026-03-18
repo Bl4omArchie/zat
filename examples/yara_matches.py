@@ -20,24 +20,29 @@ except ImportError:
 # Local imports
 from zat.utils import dir_watcher, signal_utils
 
+
 def yara_match(file_path, rules):
     """Callback for a newly extracted file"""
     print('New Extracted File: {:s}'.format(file_path))
     print('Mathes:')
     pprint(rules.match(file_path))
 
+
 def my_exit():
     """Exit on Signal"""
     print('Goodbye...')
     sys.exit()
+
 
 if __name__ == '__main__':
     # Run a set of Yara Rule matches on Extracted Files
 
     # Collect args from the command line
     parser = argparse.ArgumentParser()
-    parser.add_argument('-r', '--rule-index', type=str, required=True, help='Specify the yara rule index file (e.g. /full/path/to/yara/rules/index.yar)')
-    parser.add_argument('-e', '--extract-dir', type=str, required=True, help='Specify the Zeek extract_files directory (e.g. /full/path/to/zeek/extract_files)')
+    parser.add_argument('-r', '--rule-index', type=str, required=True,
+                        help='Specify the yara rule index file (e.g. /full/path/to/yara/rules/index.yar)')
+    parser.add_argument('-e', '--extract-dir', type=str, required=True,
+                        help='Specify the Zeek extract_files directory (e.g. /full/path/to/zeek/extract_files)')
     args, commands = parser.parse_known_args()
 
     # Check for unknown args

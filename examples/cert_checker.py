@@ -35,7 +35,7 @@ if __name__ == '__main__':
         vtq = vt_query.VTQuery()
 
         # These domains may be spoofed with a certificate issued by 'Let's Encrypt'
-        spoofed_domains = set(['paypal', 'gmail', 'google', 'apple','ebay', 'amazon'])
+        spoofed_domains = set(['paypal', 'gmail', 'google', 'apple', 'ebay', 'amazon'])
 
         # Run the zeek reader on the x509.log file looking for spoofed domains
         reader = zeek_log_reader.ZeekLogReader(args.zeek_log, tail=True)
@@ -52,8 +52,8 @@ if __name__ == '__main__':
                     pprint(row)
 
                     # Make a Virus Total query with the spoofed domain (just for fun)
-                    query_domain = subject[3:] # Just chopping off the 'CN=' part
+                    query_domain = subject[3:]  # Just chopping off the 'CN=' part
                     results = vtq.query_url(query_domain)
-                    if results.get('positives', 0) >= 2: # At least two hits
+                    if results.get('positives', 0) >= 2:  # At least two hits
                         print('\n<<< Virus Total Query >>>')
                         pprint(results)
