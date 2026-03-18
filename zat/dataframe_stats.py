@@ -47,7 +47,7 @@ def expected_counts(dataframe, rownames, colnames):
         rownames: the column name or list of columns names that make the keys of the rows
         colnames: the column name or list of columns names that make the keys of the columns
     """
-    cont_table = contingency_table(dataframe, rownames=rownames, colnames=colnames, margins=True)
+    cont_table = contingency_table(dataframe, rownames=rownames, colnames=colnames, margins=True).astype(float)
     row_counts = cont_table["All"]
     column_counts = cont_table.loc["All"]
     total_observations = cont_table["All"]["All"]
@@ -55,7 +55,7 @@ def expected_counts(dataframe, rownames, colnames):
     # There didn't seem to be a good way to vectorize this (Fixme?)
     for column in cont_table.columns:
         for row in cont_table.index:
-            cont_table[column][row] = column_counts[column] * row_counts[row] / total_observations
+            cont_table.loc[row, column] = column_counts[column] * row_counts[row] / total_observations
     return cont_table
 
 
@@ -71,16 +71,17 @@ def g_test_scores(dataframe, rownames, colnames):
         rownames: the column name or list of columns names that make the keys of the rows
         colnames: the column name or list of columns names that make the keys of the columns
     """
-    cont_table = contingency_table(dataframe, rownames=rownames, colnames=colnames, margins=False)
+    cont_table = contingency_table(dataframe, rownames=rownames, colnames=colnames, margins=False).astype(float)
     exp_counts = expected_counts(dataframe, rownames=rownames, colnames=colnames)
 
     # There didn't seem to be a good way to vectorize this (Fixme?)
     for row in cont_table.index:
         g_score = 0
         for column in cont_table.columns:
-            g_score += compute_g(cont_table[column][row], exp_counts[column][row])
+            g_score += compute_g(cont_table.loc[row, column], exp_counts.loc[row, column])
         for column in cont_table.columns:
-            cont_table[column][row] = g_score if cont_table[column][row] > exp_counts[column][row] else -g_score
+            value = g_score if cont_table.loc[row, column] > exp_counts.loc[row, column] else -g_score
+            cont_table.loc[row, column] = value
     return cont_table
 
 
