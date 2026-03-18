@@ -143,7 +143,8 @@ class DataFrameToMatrix:
             None but note that the dataframe is modified to 'lock' the categorical columns
         """
         for column in df.select_dtypes(include="category").columns:
-            df[column] = pd.Categorical(df[column], categories=sorted(df[column].unique().tolist()))
+            cats = [c for c in df[column].unique().tolist() if pd.notna(c)]
+            df[column] = pd.Categorical(df[column], categories=sorted(cats))
 
     @staticmethod
     def sanity_check_categorical(df):
@@ -285,7 +286,7 @@ def test():
 
     # Try 'nullable' integer arrays
     null_df = test_df2.copy()
-    null_df["I"] = pd.Series([10, 11, 12, np.NaN], dtype="UInt64")
+    null_df["I"] = pd.Series([10, 11, 12, np.nan], dtype="UInt64")
     print("FIT-TRANSFORM")
     matrix = to_matrix.fit_transform(null_df)
     print("TRANSFORM")

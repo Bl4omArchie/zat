@@ -1,7 +1,7 @@
 <img align="right" style="padding:35px" src="notebooks/images/SCP_med.png" width="160">
 
 # Zeek Analysis Tools (ZAT) 
-[![codecov.io](http://codecov.io/github/SuperCowPowers/zat/coverage.svg?branch=master)](http://codecov.io/github/SuperCowPowers/zat?branch=master) [![supported-versions](https://img.shields.io/pypi/pyversions/zat.svg)](https://pypi.python.org/pypi/zat) [![license](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://choosealicense.com/licenses/apache-2.0)
+[![codecov.io](http://codecov.io/github/SuperCowPowers/zat/coverage.svg?branch=master)](http://codecov.io/github/SuperCowPowers/zat?branch=master) [![supported-versions](https://img.shields.io/pypi/pyversions/zat.svg)](https://pypi.python.org/pypi/zat) [![license](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit)
 
 The ZAT Python package supports the processing and analysis of Zeek data
 with Pandas, scikit-learn, Kafka, and Spark
@@ -64,10 +64,13 @@ from here to there.
 ### Documentation
 <https://supercowpowers.github.io/zat/>
 
-#### Running the Tests
+### Running Tests
 ```
-pip install pytest coverage pytest-cov
-pytest zat
+pip install -e ".[all]"
+pip install pytest pytest-cov
+
+pytest zat              # Quick test run
+tox                     # Full matrix (Python 3.10, 3.12, 3.13 + flake8)
 ```
 
 ### About SuperCowPowers

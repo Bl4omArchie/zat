@@ -5,7 +5,11 @@ def plot_defaults():
     try:
         import matplotlib.pyplot as plt
 
-        plt.style.use("seaborn-muted")
+        # Matplotlib 3.6+ renamed seaborn styles to seaborn-v0_8-*
+        try:
+            plt.style.use("seaborn-v0_8-muted")
+        except OSError:
+            plt.style.use("seaborn-muted")
         plt.rc("font", size=14)
         plt.rc("xtick", labelsize=12)
         plt.rc("ytick", labelsize=12)

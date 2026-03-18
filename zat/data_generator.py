@@ -28,7 +28,7 @@ def df_random(num_numeric=3, num_categorical=3, num_rows=100):
         df[name] = df_numeric_column(num_rows=num_rows)
 
     # Create categorical columns
-    for name in column_names[num_numeric : num_numeric + num_categorical]:
+    for name in column_names[num_numeric:num_numeric + num_categorical]:
         df[name] = df_categorical_column(["foo", "bar", "baz"], num_rows=num_rows)
 
     # Return the dataframe
