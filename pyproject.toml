@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zat"
+version = "0.4.7"
+description = "Zeek Analysis Tools"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    {name = "Brian Wylie", email = "support@supercowpowers.com"},
+]
+keywords = ["Zeek", "Bro", "Python", "Networking", "Security", "Scikit-Learn", "Spark", "Kafka", "Parquet"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+dependencies = [
+    "requests",
+    "watchdog",
+    "pandas",
+    "scikit-learn",
+]
+
+[project.optional-dependencies]
+pyspark = ["pyspark"]
+all = ["pyspark", "pyarrow", "yara-python", "tldextract"]
+
+[project.urls]
+Homepage = "https://github.com/SuperCowPowers/zat"
+Repository = "https://github.com/SuperCowPowers/zat"
+
+[tool.setuptools.packages.find]
+include = ["zat*"]
+
+[tool.setuptools.package-data]
+zat = ["data/**/*"]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.pytest.ini_options]
+addopts = "-v --cov-report=term-missing"
+python_files = "*.py"
+python_functions = "test"
+norecursedirs = [".tox", ".git", "*.egg-info", "__pycache__", "dist", "build"]
+
+[tool.coverage.run]
+relative_files = true
