@@ -1,17 +1,19 @@
-""" DataFrame Cache Class: The class provides a caching mechanism for a Pandas DataFrame """
+"""DataFrame Cache Class: The class provides a caching mechanism for a Pandas DataFrame"""
 
 import time
 from collections import deque
+
 import pandas as pd
 
 
 class DataFrameCache(object):
     """DataFrameCache: The class provides a caching mechanism for a Pandas DataFrame.
 
-        Args:
-            max_cache_size (int): Maximum size of dataframe cache (default=10000)
-            max_cache_time (int): Time to keep rows in cache (default=60 seconds)
+    Args:
+        max_cache_size (int): Maximum size of dataframe cache (default=10000)
+        max_cache_time (int): Time to keep rows in cache (default=60 seconds)
     """
+
     def __init__(self, max_cache_size=100000, max_cache_time=60):
         """Initialize the DataFrameCache class"""
         self.max_size = max_cache_size
@@ -32,7 +34,7 @@ class DataFrameCache(object):
 
     def dataframe(self):
         """Return a DataFrame with the current window of data
-           Note: Only call this when you want the dataframe to be reconstructed"""
+        Note: Only call this when you want the dataframe to be reconstructed"""
         self.update()
         return pd.DataFrame(list(self.row_deque))
 
@@ -57,13 +59,13 @@ def test():
     df_cache = DataFrameCache(max_cache_size=10, max_cache_time=1)  # Make it small and short for testing
 
     # Make some fake data
-    base_row = {'id': 0, 'foo': 'bar', 'port': 80, 'protocol': 17}
+    base_row = {"id": 0, "foo": "bar", "port": 80, "protocol": 17}
 
     # Create an array of test rows
     test_data = []
     for i in range(20):
         row = copy.deepcopy(base_row)
-        row['id'] = i
+        row["id"] = i
         test_data.append(row)
 
     # Add rows
@@ -72,7 +74,7 @@ def test():
     # Make sure the cache size is working properly
     my_df = df_cache.dataframe()
     assert len(my_df) == 10
-    assert my_df.iloc[0]['id'] == 10  # This means the deque is proper FIFO
+    assert my_df.iloc[0]["id"] == 10  # This means the deque is proper FIFO
 
     # Now test time expiration
     time.sleep(1)

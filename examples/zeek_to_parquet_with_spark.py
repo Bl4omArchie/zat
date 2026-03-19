@@ -1,12 +1,13 @@
 """Zeek log to Parquet Dataframe Example"""
 
+import argparse
 import os
 import sys
-import argparse
+
 try:
     from pyspark.sql import SparkSession
 except ImportError:
-    print('pip install pyspark')
+    print("pip install pyspark")
     sys.exit(1)
 
 # Local imports
@@ -16,33 +17,33 @@ from zat import log_to_sparkdf
 # Helper method
 def log_to_parquet(log_in, parquet_out):
     # Spin up a local Spark Session (with 4 executors)
-    spark = SparkSession.builder.master('local[4]').appName('my_awesome').getOrCreate()
+    spark = SparkSession.builder.master("local[4]").appName("my_awesome").getOrCreate()
 
     # Use the ZAT class to load our log file into a Spark dataframe (2 lines of code!)
     spark_it = log_to_sparkdf.LogToSparkDF(spark)
     spark_df = spark_it.create_dataframe(log_in)
 
     # Write it out as a parquet file
-    spark_df.write.parquet(parquet_out, compression='snappy', mode='overwrite')
-    print('{:s} --> {:s}'.format(log_in, parquet_out))
+    spark_df.write.parquet(parquet_out, compression="snappy", mode="overwrite")
+    print("{:s} --> {:s}".format(log_in, parquet_out))
 
     # Read in the Parquet file
     spark_df = spark.read.parquet(parquet_out)
     spark_df.show(5, False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example to write Parquet file from a zeek log
 
     # Collect args from the command line
     parser = argparse.ArgumentParser()
-    parser.add_argument('zeek_log', type=str, help='Specify the zeek log input file')
-    parser.add_argument('parquet_file', type=str, help='Specify the parquet file to write out')
+    parser.add_argument("zeek_log", type=str, help="Specify the zeek log input file")
+    parser.add_argument("parquet_file", type=str, help="Specify the parquet file to write out")
     args, commands = parser.parse_known_args()
 
     # Check for unknown args
     if commands:
-        print('Unrecognized args: %s' % commands)
+        print("Unrecognized args: %s" % commands)
         sys.exit(1)
 
     # File may have a tilde in it

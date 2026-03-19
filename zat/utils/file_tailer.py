@@ -9,14 +9,15 @@ from zat.utils import file_utils
 
 class FileTailer(object):
     """FileTailer: Will provide 'tail -f' functionality for a file. The readlines() method
-                   returns a generator that yields lines as they are added to the file
+               returns a generator that yields lines as they are added to the file
 
-        Args:
-            filepath (str): The full path the file (/full/path/to/the/file.txt)
-            sleep (int): The wait interval in milliseconds (default=50)
-            full_read (bool): Read the full file  (default=True)
-            tail (bool): Do a dynamic tail on the file (i.e. tail -f) (default=True)
+    Args:
+        filepath (str): The full path the file (/full/path/to/the/file.txt)
+        sleep (int): The wait interval in milliseconds (default=50)
+        full_read (bool): Read the full file  (default=True)
+        tail (bool): Do a dynamic tail on the file (i.e. tail -f) (default=True)
     """
+
     def __init__(self, filepath, sleep=50, full_read=True, tail=True):
         """FileTailer Initialization"""
         self._filepath = filepath
@@ -46,7 +47,7 @@ class FileTailer(object):
                             time.sleep(self._sleep)
 
         except IOError as err:
-            print('Error reading the file {0}: {1}'.format(self._filepath, err))
+            print("Error reading the file {0}: {1}".format(self._filepath, err))
             return
 
 
@@ -54,15 +55,15 @@ def test():
     """Test for FileTailer Python Class"""
 
     # Grab a test file
-    data_path = file_utils.relative_dir(__file__, '../../data')
-    test_path = os.path.join(data_path, 'http.log')
-    print('Opening Data File: {:s}'.format(test_path))
+    data_path = file_utils.relative_dir(__file__, "../../data")
+    test_path = os.path.join(data_path, "http.log")
+    print("Opening Data File: {:s}".format(test_path))
 
     # Create the Class
     tailer = FileTailer(test_path, tail=False)  # First with no tailing
     for line in tailer.readlines():
         print(line)
-    print('Read with NoTail Test successful!')
+    print("Read with NoTail Test successful!")
 
     # Now include tailing (note: as an automated test this needs to timeout quickly)
     try:
@@ -77,12 +78,12 @@ def test():
                 for line in tailer.readlines():
                     print(line)
         except RuntimeError:  # InterruptingCow raises a RuntimeError on timeout
-            print('Tailing Test successful!')
+            print("Tailing Test successful!")
 
     except ImportError:
-        print('Tailing Test not run, need interruptcow module...')
+        print("Tailing Test not run, need interruptcow module...")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Run the test for easy testing/debugging
     test()

@@ -1,9 +1,9 @@
 """Cache class for key/value pairs"""
 
+import atexit
+import pickle
 import time
 from collections import OrderedDict
-import pickle
-import atexit
 
 # Local imports
 from zat.utils import file_storage
@@ -11,16 +11,17 @@ from zat.utils import file_storage
 
 class Cache(object):
     """In process memory cache. Not thread safe.
-       Usage:
-            cache = Cache(max_size=5, timeout=10)
-            cache.set('foo', 'bar')
-            cache.get('foo')
-            >>> bar
-            time.sleep(11)
-            cache.get('foo')
-            >>> None
-            cache.clear()
+    Usage:
+         cache = Cache(max_size=5, timeout=10)
+         cache.set('foo', 'bar')
+         cache.get('foo')
+         >>> bar
+         time.sleep(11)
+         cache.get('foo')
+         >>> None
+         cache.clear()
     """
+
     def __init__(self, max_size=1000, timeout=None, load=None):
         """Cache Initialization"""
         self.disk_storage = file_storage.FileStorage()
@@ -49,10 +50,10 @@ class Cache(object):
 
     def get(self, key):
         """Get an item from the cache
-           Args:
-               key: item key
-           Returns:
-               the value of the item or None if the item isn't in the cache
+        Args:
+            key: item key
+        Returns:
+            the value of the item or None if the item isn't in the cache
         """
         data = self.store.get(key)
         if not data:
@@ -70,14 +71,14 @@ class Cache(object):
     def dump(self):
         """Dump the cache (for debugging)"""
         for key in self.store.keys():
-            print(key, ':', self.get(key))
+            print(key, ":", self.get(key))
 
     @property
     def size(self):
         return len(self.store)
 
     def cleanup(self):
-        print('Calling cleanup...')
+        print("Calling cleanup...")
         self.persist()
 
     def persist(self):
@@ -88,7 +89,7 @@ class Cache(object):
 
     def _check_limit(self):
         """Intenal method: check if current cache size exceeds maximum cache
-           size and pop the oldest item in this case"""
+        size and pop the oldest item in this case"""
 
         # First compress
         self._compress()
@@ -99,7 +100,7 @@ class Cache(object):
 
     def _compress(self):
         """Internal method to compress the cache. This method will
-           expire any old items in the cache, making the cache smaller"""
+        expire any old items in the cache, making the cache smaller"""
 
         # Don't compress too often
         now = time.time()
@@ -114,14 +115,14 @@ def test():
 
     # Create the Cache
     my_cache = Cache(max_size=5, timeout=1)
-    my_cache.set('foo', 'bar')
+    my_cache.set("foo", "bar")
 
     # Test storage
-    assert my_cache.get('foo') == 'bar'
+    assert my_cache.get("foo") == "bar"
 
     # Test timeout
     time.sleep(1.1)
-    assert my_cache.get('foo') is None
+    assert my_cache.get("foo") is None
 
     # Test max_size
     my_cache = Cache(max_size=5)
@@ -129,8 +130,8 @@ def test():
         my_cache.set(str(i), i)
 
     # So the '0' key should no longer be there FIFO
-    assert my_cache.get('0') is None
-    assert my_cache.get('5') is not None
+    assert my_cache.get("0") is None
+    assert my_cache.get("5") is not None
 
     # Make sure size is working
     assert my_cache.size == 5
@@ -139,13 +140,13 @@ def test():
     my_cache.dump()
 
     # Test storing 'null' values
-    my_cache.set(0, 'foo')
-    my_cache.set(0, 'bar')
-    my_cache.set(None, 'foo')
-    my_cache.set('', None)
-    assert my_cache.get('') is None
-    assert my_cache.get(None) == 'foo'
-    assert my_cache.get(0) == 'bar'
+    my_cache.set(0, "foo")
+    my_cache.set(0, "bar")
+    my_cache.set(None, "foo")
+    my_cache.set("", None)
+    assert my_cache.get("") is None
+    assert my_cache.get(None) == "foo"
+    assert my_cache.get(0) == "bar"
 
     # Test the cache compression
     my_cache = Cache(max_size=5, timeout=1)
@@ -163,7 +164,7 @@ def test():
     my_cache._compress()  # Should not output a compression message
 
     # Test persistance functionality
-    my_cache = Cache(load='my_test_cache')
+    my_cache = Cache(load="my_test_cache")
     for i in range(5):
         my_cache.set(str(i), i)
     assert my_cache.size == 5
@@ -171,12 +172,12 @@ def test():
     my_cache.persist()
     del my_cache
 
-    load_cache = Cache(load='my_test_cache')
+    load_cache = Cache(load="my_test_cache")
     assert load_cache.size == 5
     load_cache.dump()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Run the test
     test()

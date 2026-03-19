@@ -3,7 +3,7 @@
 import socket
 
 # Local imports
-from zat.utils import net_utils, cache
+from zat.utils import cache, net_utils
 
 
 class ReverseDNS(object):
@@ -23,7 +23,7 @@ class ReverseDNS(object):
 
         # Is the ip_address local or special
         elif not self.lookup_internal and net_utils.is_internal(ip_address):
-            domain = 'internal'
+            domain = "internal"
         elif net_utils.is_special(ip_address):
             domain = net_utils.is_special(ip_address)
 
@@ -41,29 +41,29 @@ class ReverseDNS(object):
     def _reverse_dns_lookup(ip_address):
         """Perform the reverse DNS lookup
 
-           Args:
-               ip_address: the ip_address (as a str)
-           Returns:
-               the domain given by a reverse DNS request on the ip address
+        Args:
+            ip_address: the ip_address (as a str)
+        Returns:
+            the domain given by a reverse DNS request on the ip address
         """
 
         # Look it up
         try:
             return socket.gethostbyaddr(ip_address)[0]
         except socket.herror:
-            return 'nxdomain'
+            return "nxdomain"
 
 
 def test():
     """Test for ReverseDNS class"""
     dns = ReverseDNS()
 
-    print(dns.lookup('192.168.0.1'))
-    print(dns.lookup('8.8.8.8'))
+    print(dns.lookup("192.168.0.1"))
+    print(dns.lookup("8.8.8.8"))
 
     # Test cache
-    print(dns.lookup('8.8.8.8'))
+    print(dns.lookup("8.8.8.8"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()

@@ -1,49 +1,48 @@
 """Risky DNS zat Example"""
 
-import os
-import sys
 import argparse
-from pprint import pprint
+import os
 import pickle
+import sys
+from pprint import pprint
 
 # Third Party Imports
 try:
     import tldextract
 except ImportError:
-    print('\nThis example needs tldextract. Please do a $pip install tldextract and rerun this example')
+    print("\nThis example needs tldextract. Please do a $pip install tldextract and rerun this example")
     sys.exit(1)
 
 # Local imports
 from zat import zeek_log_reader
-from zat.utils import vt_query, signal_utils
+from zat.utils import signal_utils, vt_query
 
 
 def save_vtq():
     """Exit on Signal"""
-    global vtq
+    global vtq  # noqa: F824
 
-    print('Saving VirusTotal Query Cache...')
-    pickle.dump(vtq, open('vtq.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+    print("Saving VirusTotal Query Cache...")
+    pickle.dump(vtq, open("vtq.pkl", "wb"), protocol=pickle.HIGHEST_PROTOCOL)
     sys.exit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Risky DNS/VT Query application
-    global vtq
 
     # Collect args from the command line
     parser = argparse.ArgumentParser()
-    parser.add_argument('zeek_log', type=str, help='Specify a zeek log to run ZeekLogReader test on')
+    parser.add_argument("zeek_log", type=str, help="Specify a zeek log to run ZeekLogReader test on")
     args, commands = parser.parse_known_args()
 
     # Check for unknown args
     if commands:
-        print('Unrecognized args: %s' % commands)
+        print("Unrecognized args: %s" % commands)
         sys.exit(1)
 
     # Sanity check that this is a dns log
-    if 'dns' not in args.zeek_log:
-        print('This example only works with Zeek dns.log files..')
+    if "dns" not in args.zeek_log:
+        print("This example only works with Zeek dns.log files..")
         sys.exit(1)
 
     # File may have a tilde in it
@@ -53,15 +52,35 @@ if __name__ == '__main__':
         # See if we have a serialized VirusTotal Query Class.
         # If we do not have one we'll create a new one
         try:
-            vtq = pickle.load(open('vtq.pkl', 'rb'))
-            print('Opening VirusTotal Query Cache (cache_size={:d})...'.format(vtq.size))
+            vtq = pickle.load(open("vtq.pkl", "rb"))
+            print("Opening VirusTotal Query Cache (cache_size={:d})...".format(vtq.size))
         except IOError:
-            vtq = vt_query.VTQuery(max_cache_time=60*24*7)  # One week cache
+            vtq = vt_query.VTQuery(max_cache_time=60 * 24 * 7)  # One week cache
 
         # See our 'Risky Domains' Notebook for the analysis and
         # statistical methods used to compute this risky set of TLDs
-        risky_tlds = set(['info', 'tk', 'xyz', 'online', 'club', 'ru', 'website', 'in', 'ws',
-                          'top', 'site', 'work', 'biz', 'name', 'tech', 'loan', 'win', 'pro'])
+        risky_tlds = set(
+            [
+                "info",
+                "tk",
+                "xyz",
+                "online",
+                "club",
+                "ru",
+                "website",
+                "in",
+                "ws",
+                "top",
+                "site",
+                "work",
+                "biz",
+                "name",
+                "tech",
+                "loan",
+                "win",
+                "pro",
+            ]
+        )
 
         # Launch long lived process with signal catcher
         with signal_utils.signal_catcher(save_vtq):
@@ -71,22 +90,23 @@ if __name__ == '__main__':
             for row in reader.readrows():
 
                 # Pull out the TLD
-                query = row['query']
+                query = row["query"]
                 tld = tldextract.extract(query).suffix
 
                 # Check if the TLD is in the risky group
                 if tld in risky_tlds:
                     # Show the risky dns
-                    print('Making VT query for {:s}...'.format(query))
+                    print("Making VT query for {:s}...".format(query))
 
                     # Make the VT query
                     results = vtq.query_url(query)
-                    if results.get('positives', 0) >= 1:  # At least one hit (change this higher if you want)
-                        print('\nRisky Domain DNS Query Found')
-                        print('From: {:s} To: {:s} QType: {:s} RCode: {:s}'.format(row['id.orig_h'],
-                                                                                   row['id.resp_h'],
-                                                                                   row['qtype_name'],
-                                                                                   row['rcode_name']))
+                    if results.get("positives", 0) >= 1:  # At least one hit (change this higher if you want)
+                        print("\nRisky Domain DNS Query Found")
+                        print(
+                            "From: {:s} To: {:s} QType: {:s} RCode: {:s}".format(
+                                row["id.orig_h"], row["id.resp_h"], row["qtype_name"], row["rcode_name"]
+                            )
+                        )
                         pprint(results)
 
         # Save the Virus Total Query

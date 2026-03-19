@@ -3,9 +3,10 @@
 import os
 import time
 
+from watchdog.events import FileSystemEventHandler
+
 # Other Imports
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
 # Local Imports
 from zat.utils import file_utils
@@ -32,21 +33,21 @@ class DirWatcher(FileSystemEventHandler):
 
 def my_callback(file_path):
     """Callback for new file"""
-    print('New File Created: {:s}'.format(file_path))
+    print("New File Created: {:s}".format(file_path))
 
 
 def test():
     """Test the DirWatcher Class"""
-    watch_path = file_utils.relative_dir(__file__, '../../data')
-    print('Watching Directory: %s' % watch_path)
+    watch_path = file_utils.relative_dir(__file__, "../../data")
+    print("Watching Directory: %s" % watch_path)
     DirWatcher(watch_path, my_callback)
 
     # Create a file and then delete it
-    temp_file = os.path.join(watch_path, 'test.tmp')
-    open(temp_file, 'w').close()
+    temp_file = os.path.join(watch_path, "test.tmp")
+    open(temp_file, "w").close()
     time.sleep(1)
     os.remove(temp_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()

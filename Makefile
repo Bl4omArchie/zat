@@ -1,9 +1,10 @@
-.PHONY: help clean clean-pyc clean-build list test test-all coverage docs release sdist
+.PHONY: help clean clean-pyc clean-build lint format test test-all coverage docs release sdist
 
 help:
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "lint - check style with flake8"
+	@echo "format - format code with black and isort"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
@@ -30,18 +31,20 @@ clean-pyc:
 	find . -name '*~' -exec rm -rf {} +
 
 lint:
-	flake8 zat test
+	flake8 zat
+
+format:
+	black zat examples explorations
+	isort zat examples explorations
 
 test:
-	py.test
+	pytest zat
 
 test-all:
 	tox
 
 coverage:
-	coverage run --source zat setup.py test
-	coverage report -m
-	coverage html
+	pytest --cov=zat --cov-report=term-missing --cov-report=html zat
 	open htmlcov/index.html
 
 docs:
@@ -53,10 +56,9 @@ docs:
 	open docs/_build/html/index.html
 
 release: clean
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	python -m build
+	twine upload dist/*
 
 sdist: clean
-	python setup.py sdist
-	python setup.py bdist_wheel upload
+	python -m build
 	ls -l dist
