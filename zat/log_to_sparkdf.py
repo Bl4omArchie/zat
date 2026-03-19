@@ -13,7 +13,7 @@ from zat.utils.field_info import get_field_info
 
 
 class LogToSparkDF:
-    """LogToSparkDF: Converts  a Zeek log to a Spark DataFrame"""
+    """LogToSparkDF: Converts a Zeek log to a Spark DataFrame"""
 
     def __init__(self, spark):
         """Initialize the LogToSparkDF class"""

@@ -114,7 +114,7 @@ class LogToDask:
             # Set the dask type
             dask_types[name] = item_type
 
-        # Return the Dictionary of name: type
+        # Return the dictionary of name: type
         return dask_types
 
 

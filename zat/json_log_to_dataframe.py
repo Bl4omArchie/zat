@@ -1,4 +1,4 @@
-"""JSONLogToDataFrame: Converts  a Zeek JSON log to a Pandas DataFrame"""
+"""JSONLogToDataFrame: Converts a Zeek JSON log to a Pandas DataFrame"""
 
 import os
 
