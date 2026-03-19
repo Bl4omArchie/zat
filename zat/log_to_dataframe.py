@@ -22,7 +22,16 @@ class LogToDataFrame():
             If you have any issues/problems with this class please submit a GitHub issue.
         More Info: https://supercowpowers.github.io/zat/large_dataframes.html
     """
+
     def __init__(self):
+        """Initialize the LogToDataFrame class"""
+
+        # First Level Type Mapping
+        #    This map defines the types used when first reading in the Zeek log into a 'chunk' dataframes.
+        #    Types (like time and interval) will be defined as one type at first but then
+        #    will undergo further processing to produce correct types with correct values.
+        # See: https://stackoverflow.com/questions/29245848/what-are-all-the-dtypes-that-pandas-recognizes
+        #      for more info on supported types.
         self.type_map = {'bool': 'category',  # Can't hold NaN values in 'bool', so we're going to use category
                         'count': 'UInt64',
                         'int': 'Int32',

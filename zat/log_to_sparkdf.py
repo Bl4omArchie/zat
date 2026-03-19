@@ -1,14 +1,17 @@
-"""LogToDataFrame: Converts a Zeek log to a Spark DataFrame"""
-
+"""LogToSparkDF: Converts a Zeek log to a Spark DataFrame"""
 
 # Third Party
 try:
-    from pyspark.sql.types import StructType, StringType, IntegerType, FloatType, LongType, DoubleType
     from pyspark.sql.functions import col, when
+    from pyspark.sql.types import DoubleType, FloatType, IntegerType, LongType, StringType, StructType
 except ImportError:
-    print('\npip install pyspark')
+    print("\npip install pyspark")
 
+
+# Local
 from typing import List, Tuple
+
+from zat.utils.field_info import get_field_info
 
 
 class LogToSparkDF():
@@ -47,7 +50,7 @@ class LogToSparkDF():
         """
 
         # Create a Zeek log reader just to read in the header for names and types
-        field_names, field_types = self._get_field_info(log_filename=log_filename)
+        field_names, field_types = get_field_info(log_filename=log_filename)
 
         spark_schema = self._apply_type_map(column_names=field_names, column_types=field_types)
 
