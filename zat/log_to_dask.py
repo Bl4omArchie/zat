@@ -1,13 +1,15 @@
+"""LogToDataFrame: Converts a Zeek log to a Dask DataFrame"""
+
+
 from typing import Dict, List, Optional, Tuple
 
-from zat.base import Converter
 
-import numpy as np
 import dask.dataframe as dd
+from zat.utils.field_info import get_field_info
 
 
-class LogToDask(Converter):
-    """LogToDask: create_dataframes a Zeek log to a Dask DataFrame"""
+class LogToDask():
+    """LogToDask: Converts a Zeek log to a Dask DataFrame"""
     def __init__(self):
         self.type_map = {'bool': 'category',  # Can't hold NaN values in 'bool', so we're going to use category
                         'count': 'UInt64',
@@ -30,7 +32,7 @@ class LogToDask(Converter):
         """
 
         # Grab the field information
-        field_names, field_types = self._get_field_info(log_filename=log_filename)
+        field_names, field_types = get_field_info(log_filename=log_filename)
         all_fields = field_names  # We need ALL the fields for later
 
         # If usecols is set then we'll subset the fields and types

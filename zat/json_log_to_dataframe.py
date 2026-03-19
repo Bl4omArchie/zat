@@ -1,4 +1,4 @@
-"""JSONLogToDataFrame: Converts a Zeek JSON log to a Pandas DataFrame"""
+"""JSONLogToDataFrame: Converts  a Zeek JSON log to a Pandas DataFrame"""
 
 import os
 
@@ -9,7 +9,7 @@ import pandas as pd
 
 
 class JSONLogToDataFrame(object):
-    """JSONLogToDataFrame: Converts a Zeek JSON log to a Pandas DataFrame
+    """JSONLogToDataFrame: Converts  a Zeek JSON log to a Pandas DataFrame
         Notes:
             Unlike the regular Zeek logs, when you dump the data to JSON you lose
             all the type information. This means we have to guess/infer a lot

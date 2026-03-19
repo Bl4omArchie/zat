@@ -1,16 +1,18 @@
-"""LogToDataFrame: create_dataframes a Zeek log to a Pandas DataFrame"""
+"""LogToDataFrame: Converts a Zeek log to a Pandas DataFrame"""
 
 
 # Third Party
 from typing import List, Dict, Optional, Tuple
 import pandas as pd
 
+
 # Local
-from zat.base import  Converter
+from zat.utils.field_info import get_field_info
 
 
-class LogToDataFrame(Converter):
-    """LogToDataFrame: create_dataframes a Zeek log to a Pandas DataFrame
+
+class LogToDataFrame():
+    """LogToDataFrame: Converts a Zeek log to a Pandas DataFrame
         Notes:
             This class has recently been overhauled from a simple loader to a more
             complex class that should in theory:
@@ -42,7 +44,7 @@ class LogToDataFrame(Converter):
         """
 
         # Grab the field information
-        field_names, field_types = self._get_field_info(log_filename=log_filename)
+        field_names, field_types = get_field_info(log_filename=log_filename)
         all_fields = field_names
 
         # If usecols is set then we'll subset the fields and types

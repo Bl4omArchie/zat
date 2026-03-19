@@ -1,7 +1,5 @@
-import fsspec
+"""LogToDataFrame: Converts a Zeek log to a Spark DataFrame"""
 
-from zat.base import  Converter
-from zat import zeek_log_reader
 
 # Third Party
 try:
@@ -10,11 +8,11 @@ try:
 except ImportError:
     print('\npip install pyspark')
 
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 
-class LogToSparkDF(Converter):
-    """LogToSparkDF: Converts a Zeek log to a Spark DataFrame"""
+class LogToSparkDF():
+    """LogToSparkDF: Converts  a Zeek log to a Spark DataFrame"""
 
     def __init__(self, spark):
         """Initialize the LogToSparkDF class"""
@@ -86,12 +84,6 @@ class LogToSparkDF(Converter):
 
         # Return the spark dataframe
         return _df
-
-
-    def _get_dataframe(self, log_filename: str, all_fields: List[str], dtype: Dict):
-        # As the _get_dataframe method for sparkdf couldn't match the signature of the abstract class.
-        # This function will be empty and the dataframe will gathered directly in create_dataframe.
-        pass
 
 
     def _apply_type_map(self, column_names: List[str], column_types: List[str], verbose: bool = False) -> Tuple[List[str], List[str]]:

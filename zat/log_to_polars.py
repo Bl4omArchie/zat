@@ -1,13 +1,17 @@
+"""LogToDataFrame: Converts a Zeek log to a Polars DataFrame"""
+
+
 # Third Party
 from typing import Dict, Optional, List, Tuple
 import polars as pl
 
+
 # Local
-from zat.base import  Converter
+from zat.utils.field_info import get_field_info
 
 
-class LogToPolars(Converter):
-    """LogToPolats: create_dataframes a Zeek log to a Polars DataFrame"""
+class LogToPolars():
+    """LogToPolats: Converts a Zeek log to a Polars DataFrame"""
     def __init__(self):
         # Polars data types : https://docs.pola.rs/api/python/stable/reference/datatypes.html
         self.type_map = {
@@ -33,7 +37,7 @@ class LogToPolars(Converter):
         """
 
         # 1. Get field infos.
-        field_names, field_types = self._get_field_info(log_filename=log_filename)
+        field_names, field_types = get_field_info(log_filename=log_filename)
         all_fields = field_names
 
         # 2. Convert zeek types to polars types.
