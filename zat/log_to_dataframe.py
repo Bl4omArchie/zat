@@ -116,7 +116,7 @@ class LogToDataFrame:
             # Set the pandas type
             pandas_types[name] = item_type
 
-        # Return the Dictionary of name: type
+        # Return the dictionary of name: type
         return pandas_types
 
 
@@ -132,7 +132,7 @@ def test():
     data_path = file_utils.relative_dir(__file__, "../data")
     log_path = os.path.join(data_path, "conn.log")
 
-    # create_dataframe it to a Pandas DataFrame
+    # Convert it to a Pandas DataFrame
     log_to_df = LogToDataFrame()
     my_df = log_to_df.create_dataframe(log_path)
 
